@@ -1,0 +1,203 @@
+{
+  "name": "Sistema-Antigo",
+  "nodes": [
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "<GOOGLE_SHEET_ID>",
+          "mode": "list",
+          "cachedResultName": "Solicitações_SistemaAntigo",
+          "cachedResultUrl": "<GOOGLE_SHEET_URL>"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Página1",
+          "cachedResultUrl": "<GOOGLE_SHEET_TAB_URL>"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -736,
+        0
+      ],
+      "id": "<NODE_ID_PLANILHA>",
+      "name": "PlanilhaSolicitacao",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "<CREDENTIAL_ID>",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "<ID_1>",
+              "name": "solicitacao",
+              "value": "={{ $json['Solicitação'] }}",
+              "type": "number"
+            },
+            {
+              "id": "<ID_2>",
+              "name": "favorecido",
+              "value": "={{ $json.Favorecido }}",
+              "type": "string"
+            },
+            {
+              "id": "<ID_3>",
+              "name": "documento",
+              "value": "={{ $json['CNPJ / CPF'] }}",
+              "type": "string"
+            },
+            {
+              "id": "<ID_4>",
+              "name": "valor",
+              "value": "={{ $json['Valor '] }}",
+              "type": "number"
+            },
+            {
+              "id": "<ID_5>",
+              "name": "vencimento",
+              "value": "={{ $json.Vencimento }}",
+              "type": "string"
+            },
+            {
+              "id": "<ID_6>",
+              "name": "tipo",
+              "value": "={{ $json['Tipo '] }}",
+              "type": "string"
+            },
+            {
+              "id": "<ID_7>",
+              "name": "status",
+              "value": "={{ $json.Status }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        -528,
+        0
+      ],
+      "id": "<NODE_ID_DADOS>",
+      "name": "Dados"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 2
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -944,
+        0
+      ],
+      "id": "<NODE_ID_TRIGGER>",
+      "name": "Cada_5min"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  {\n    json: {\n      dados: $input.all().map(item => item.json)\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -320,
+        0
+      ],
+      "id": "<NODE_ID_CODE>",
+      "name": "CodigoJS"
+    },
+    {
+      "parameters": {
+        "command": "={{ 'start \"\" \"ms-powerautomate:/console/flow/run?environmentid=<ENVIRONMENT_ID>&workflowid=<WORKFLOW_ID>&inputArguments=' + encodeURIComponent(JSON.stringify({dados: JSON.stringify($json.dados)})) + '&source=Other\"' }}"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        -96,
+        0
+      ],
+      "id": "<NODE_ID_PAD>",
+      "name": "AbrirPAD"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "PlanilhaSolicitacao": {
+      "main": [
+        [
+          {
+            "node": "Dados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dados": {
+      "main": [
+        [
+          {
+            "node": "CodigoJS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cada_5min": {
+      "main": [
+        [
+          {
+            "node": "PlanilhaSolicitacao",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CodigoJS": {
+      "main": [
+        [
+          {
+            "node": "AbrirPAD",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "<VERSION_ID>",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "nodeGroups": [],
+  "id": "<WORKFLOW_EXPORT_ID>",
+  "tags": []
+}
